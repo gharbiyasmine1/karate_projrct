@@ -1,0 +1,30 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Test') {
+      agent {
+        docker {
+          image 'maven:3.9.12-eclipse-temurin-8'
+          args '-u root --entrypoint='
+        }
+      }
+      steps {
+        sh 'mvn test -Dkarate.options="--tags @partagerEvenement"'
+      }
+      post {
+        always {
+          publishHTML([
+            allowMissing: true,
+            alwaysLinkToLastBuild: true,
+            reportDir: 'target/karate-reports',
+            reportFiles: 'karate-summary.html',
+            reportName: 'Karate Report',
+            keepAll: true
+          ])
+          junit 'target/surefire-reports/*.xml'
+        }
+      }
+    }
+  }
+} 
